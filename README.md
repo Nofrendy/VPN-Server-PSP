@@ -1,115 +1,136 @@
-# VPN-Server-PSP
-Saya coba buat server online multiplayer dengan mengandalkan VPS sebagai hosting utama dari VPN yang akan dibuat
+# 🎮 PPSSPP Multiplayer Server - Direct Setup
 
-# PPSSPP Multiplayer Server with WireGuard & AdhocServer (VPS Azure)
+> Server multiplayer PPSSPP dengan management panel web yang modern dan mudah digunakan.
 
-Panduan lengkap membuat server multiplayer PPSSPP agar bisa mabar online dengan teman menggunakan VPS (Ubuntu 22.04), WireGuard VPN, dan AdhocServer.
+Panduan lengkap untuk membuat server multiplayer PPSSPP menggunakan VPS Azure Ubuntu 22.04 dengan web management panel yang memungkinkan Anda bermain online dengan teman-teman dimana saja.
 
----
+## ✨ Fitur
 
-## 1. Sewa VPS Ubuntu 22.04
-- Pilih region Indonesia (atau terdekat).
-- Catat IP publik VPS.
-
----
-
-## 2. Buka Port di NSG Azure & Firewall VPS
-- **WireGuard:** UDP 54378
-- **AdhocServer:** UDP 27312
-
-Contoh rule NSG Azure:
-- Destination port: 54378, Protocol: UDP, Action: Allow
-- Destination port: 27312, Protocol: UDP, Action: Allow
-
-Di VPS:
-```bash
-sudo ufw allow 54378/udp
-sudo ufw allow 27312/udp
-```
+- 🎮 **PPSSPP AdhocServer** dengan auto-management
+- 🌐 **Web Management Panel** yang modern dan responsif
+- 📱 **Mobile-friendly** interface untuk monitoring
+- 🔄 **Auto-restart** dan process management
+- 📊 **Real-time logs** dan server status
+- 📤 **Binary upload** via web interface
+- 🔒 **Secure** dan mudah dikonfigurasi
+- 🚀 **One-click installer** script
 
 ---
 
-## 3. Install WireGuard di VPS
+## 🚀 Quick Start
 
-```bash
-sudo apt update && sudo apt upgrade -y
-sudo apt install wireguard -y
-```
+### 1. Persiapan VPS
+- Sewa VPS Ubuntu 22.04 (disarankan Azure/Digital Ocean)
+- Catat IP publik VPS Anda
+- Pastikan domain mengarah ke IP VPS (opsional)
 
-Atau gunakan script auto-install (rekomendasi):
-```bash
-curl -O https://raw.githubusercontent.com/angristan/wireguard-install/master/wireguard-install.sh
-chmod +x wireguard-install.sh
-sudo ./wireguard-install.sh
-```
-- Ikuti wizard, isi IP publik VPS, port (54378), DNS (1.1.1.1), dst.
-- Buat client (misal: `rendsmodpsp`), file config akan dibuat (misal: `/home/username/wg0-client-rendsmodpsp.conf`).
+### 2. Konfigurasi Network
+**Azure Network Security Group:**
+- Port 3000 (TCP) - Web Management Panel
+- Port 27312 (UDP) - PPSSPP AdhocServer
 
----
+**VPS Firewall:**
+Firewall akan dikonfigurasi otomatis oleh installer script.
 
-## 4. Download & Import Config Client ke HP/PC
-
-- Download file `.conf` ke HP/PC (bisa via `scp` atau QR code):
-  ```bash
-  sudo apt install qrencode -y
-  qrencode -t ansiutf8 < /home/username/wg0-client-rendsmodpsp.conf
-  ```
-- Scan QR di aplikasi WireGuard HP, atau import file di PC.
-
----
-
-## 5. Connect ke VPN WireGuard
-
-- Aktifkan profile di aplikasi WireGuard.
-- Test ping ke IP privat server (misal: `10.66.66.1`) dari HP/PC.
-
----
-
-## 6. Install & Jalankan AdhocServer di VPS
+### 3. Instalasi Server
+Cukup jalankan satu command di VPS Anda:
 
 ```bash
-sudo apt install git build-essential libsqlite3-dev -y
-git clone https://github.com/Souler/ppsspp-adhoc-server.git
-cd ppsspp-adhoc-server
-make
-./AdhocServer
+# Download dan jalankan installer
+wget -O install.sh [installer-url] && chmod +x install.sh && sudo bash install.sh
 ```
-- Pastikan output: `Listening for Connections on TCP Port 27312.`
+
+*Installer akan otomatis menginstall semua dependencies dan mengkonfigurasi server.*
+
+### 4. Akses Web Panel
+Setelah instalasi selesai:
+- Buka browser: `http://[IP-VPS]:3000`
+- Upload file AdhocServer binary
+- Start server melalui web panel
+
+### 5. Konfigurasi PPSSPP Client
+Di aplikasi PPSSPP:
+- **Settings** → **Networking**
+- **Pro Ad Hoc Server**: `[IP-VPS]:27312`
+- Simpan dan mulai bermain!
 
 ---
 
-## 7. Setting PPSSPP Multiplayer
+## 🎯 Cara Bermain
 
-- Semua pemain connect ke VPN WireGuard.
-- Di PPSSPP:  
-  - Settings → Networking  
-  - Enable networking/WLAN  
-  - Change PRO ad hoc server IP address: **isi dengan IP privat WireGuard server (misal: 10.66.66.1)**
-- Simpan.
+1. **Host** membuat room/lobby game
+2. **Player lain** join ke room yang sama
+3. Pastikan semua player menggunakan server yang sama
+4. Selamat bermain multiplayer online! 🎮
 
 ---
 
-## 8. Mainkan Game Multiplayer
+## 🛠️ Manajemen Server
 
-- Host buat room/lobby, pemain lain join.
-- Selamat mabar!
+### Web Management Panel
+- **Start/Stop/Restart** server dengan sekali klik
+- **Monitor status** server real-time
+- **View logs** untuk troubleshooting
+- **Upload binary** AdhocServer baru
+- **Responsive design** untuk akses mobile
 
----
-
-## Troubleshooting
-
-- Pastikan semua port sudah dibuka di NSG Azure dan firewall VPS.
-- Cek status WireGuard:
-  ```bash
-  sudo systemctl status wg-quick@wg0
-  sudo wg show
-  ```
-- Test ping antar client dan ke server.
-- Pastikan semua client mengisi IP AdhocServer dengan benar.
+### Service Management (Advanced)
+Jika perlu akses langsung via SSH:
+- **Status**: `systemctl status ppsspp-server`
+- **Restart**: `systemctl restart ppsspp-server`
+- **Logs**: `journalctl -u ppsspp-server -f`
 
 ---
 
-## Credits
+## 🔧 Spesifikasi Teknis
+
+- **Platform**: Ubuntu 22.04 LTS
+- **Runtime**: Node.js 18.x
+- **Process Manager**: SystemD service
+- **Web Framework**: Express.js + Socket.IO
+- **Frontend**: Modern responsive HTML5/CSS3
+- **Binary**: PPSSPP AdhocServer (upload manual)
+
+---
+
+## 🎮 Game Compatibility
+
+Server ini kompatibel dengan semua game PSP yang mendukung Ad Hoc multiplayer, termasuk:
+- Monster Hunter Series
+- God Eater Series  
+- Phantasy Star Portable
+- Crisis Core Final Fantasy VII
+- Dan banyak lagi...
+
+---
+
+## ⚠️ Troubleshooting
+
+### Server tidak bisa diakses:
+- Pastikan port 3000 dan 27312 sudah dibuka di firewall
+- Cek status service: `systemctl status ppsspp-server`
+
+### PPSSPP tidak bisa connect:
+- Pastikan menggunakan IP:Port yang benar
+- Cek apakah AdhocServer sudah running di web panel
+
+### Upload binary gagal:
+- Pastikan file AdhocServer valid dan executable
+- Cek logs di web panel untuk detail error
+
+---
+
+## 🤝 Kontribusi
+
+Ingin berkontribusi pada project ini? Silakan hubungi melalui:
+
+📱 **Instagram**: [@rends_mod](https://instagram.com/rends_mod)  
+💬 **Telegram**: [@weathershit](https://t.me/weathershit)  
+📧 **Email**: [nofrendydelmiren@gmail.com](mailto:nofrendydelmiren@gmail.com)
+
+---
+
+## 📝 Credits
 
 - [angristan/wireguard-install](https://github.com/angristan/wireguard-install)
 - [Souler/ppsspp-adhoc-server](https://github.com/Souler/ppsspp-adhoc-server)
